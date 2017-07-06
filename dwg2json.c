@@ -4,14 +4,12 @@
 #include <unistd.h>
 #include <math.h>
 #include <dwg.h>
-#include "suffix.c"
 
 int dwg2json(char *filename);
 
 void output_JSON(Dwg_Data* dwg);
 
 int main(int argc, char *argv[]) {
-  REQUIRE_INPUT_FILE_ARG (argc);
   return dwg2json (argv[1]);
 }
 
@@ -39,10 +37,13 @@ unsigned output_LINE(Dwg_Object* obj) {
          "      \"type\": \"line\",\n"
          "      \"startX\": %f,\n"
          "      \"startY\": %f,\n"
+         "      \"startZ\": %f,\n"
          "      \"endX\": %f,\n"
-         "      \"endY\": %f\n"
+         "      \"endY\": %f,\n"
+         "      \"endZ\": %f\n"
          "    }",
-         line->start.x, line->start.y, line->end.x, line->end.y);
+         line->start.x, line->start.y, line->start.z,
+         line->end.x, line->end.y, line->start.z);
   return 1;
 }
 
@@ -53,9 +54,10 @@ unsigned int output_CIRCLE(Dwg_Object* obj) {
          "      \"type\": \"circle\",\n"
          "      \"centerX\": %f,\n"
          "      \"centerY\": %f,\n"
+         "      \"centerZ\": %f,\n"
          "      \"radius\": %f\n"
          "    }",
-         circle->center.x, circle->center.y, circle->radius);
+         circle->center.x, circle->center.y, circle->center.z, circle->radius);
   return 1;
 }
 
@@ -66,11 +68,37 @@ unsigned int output_ARC(Dwg_Object* obj) {
          "      \"type\": \"circle\",\n"
          "      \"centerX\": %f,\n"
          "      \"centerY\": %f,\n"
+         "      \"centerZ\": %f,\n"
          "      \"startAngle\": %f,\n"
          "      \"endAngle\": %f,\n"
          "      \"radius\": %f\n"
          "    }",
-         arc->center.x, arc->center.y, arc->start_angle, arc->end_angle, arc->radius);
+         arc->center.x, arc->center.y, arc->center.z, arc->start_angle, arc->end_angle, arc->radius);
+  return 1;
+}
+
+unsigned int output_ELLIPSE(Dwg_Object* obj) {
+  Dwg_Entity_ELLIPSE* ellipse;
+  ellipse = obj->tio.entity->tio.ELLIPSE;
+  printf("    {\n"
+         "      \"type\": \"ellipse\",\n"
+         "      \"centerX\": %f,\n"
+         "      \"centerY\": %f,\n"
+         "      \"centerZ\": %f,\n"
+         "      \"smallAxisX\": %f,\n"
+         "      \"smallAxisY\": %f,\n"
+         "      \"smallAxisZ\": %f,\n"
+         "      \"extrusionX\": %f,\n"
+         "      \"extrusionY\": %f,\n"
+         "      \"extrusionZ\": %f,\n"
+         "      \"axisRatio\": %f,\n"
+         "      \"startAngle\": %f,\n"
+         "      \"endAngle\": %f\n"
+         "    }",
+         ellipse->center.x, ellipse->center.y, ellipse->center.z,
+         ellipse->sm_axis.x, ellipse->sm_axis.y, ellipse->sm_axis.z,
+         ellipse->extrusion.x, ellipse->extrusion.y, ellipse->extrusion.z,
+         ellipse->axis_ratio, ellipse->start_angle, ellipse->end_angle);
   return 1;
 }
 
@@ -93,6 +121,9 @@ unsigned int output_object(Dwg_Object* obj, unsigned int count) {
   } else if (obj->type == DWG_TYPE_ARC) {
     output_comma(count);
     return output_ARC(obj);
+  } else if (obj->type == DWG_TYPE_ELLIPSE) {
+    output_comma(count);
+    return output_ELLIPSE(obj);
   }
   return 0;
 }
