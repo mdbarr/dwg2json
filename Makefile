@@ -1,5 +1,5 @@
 all:
-	gcc -o dwg2json dwg2json.c -I/usr/local/include -lredwg -lm
+	gcc -o dwg2json dwg2json.c -I/usr/local/include -lredwg -lm -static
 
 test:
 	./dwg2json cube.dwg

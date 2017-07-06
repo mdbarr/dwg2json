@@ -5,31 +5,6 @@
 #include <math.h>
 #include <dwg.h>
 
-int dwg2json(char *filename);
-
-void output_JSON(Dwg_Data* dwg);
-
-int main(int argc, char *argv[]) {
-  return dwg2json (argv[1]);
-}
-
-int dwg2json(char *filename) {
-  int error;
-  Dwg_Data dwg;
-
-  error = dwg_read_file(filename, &dwg);
-
-  if (!error)
-    {
-      output_JSON(&dwg);
-    }
-
-  dwg_free(&dwg);
-  /* This value is the return value for `main',
-     so clamp it to either 0 or 1.  */
-  return error ? 1 : 0;
-}
-
 unsigned output_LINE(Dwg_Object* obj) {
   Dwg_Entity_LINE* line;
   line = obj->tio.entity->tio.LINE;
@@ -148,4 +123,25 @@ void output_JSON(Dwg_Data* dwg) {
          "  \"count\": %d\n"
          "}\n",
          count);
+}
+
+int dwg2json(char *filename) {
+  int error;
+  Dwg_Data dwg;
+
+  error = dwg_read_file(filename, &dwg);
+
+  if (!error) {
+    output_JSON(&dwg);
+  }
+
+  dwg_free(&dwg);
+  return error ? 1 : 0;
+}
+
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    fprintf(stderr, "Usage: dwg2json FILE.dwg\n");
+  }
+  return dwg2json(argv[1]);
 }
