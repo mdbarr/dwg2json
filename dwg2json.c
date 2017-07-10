@@ -5,6 +5,12 @@
 #include <math.h>
 #include <dwg.h>
 
+void output_comma(unsigned int count) {
+  if (count) {
+    printf(",\n");
+  }
+}
+
 unsigned output_LINE(Dwg_Object* obj) {
   Dwg_Entity_LINE* line;
   line = obj->tio.entity->tio.LINE;
@@ -40,7 +46,7 @@ unsigned int output_ARC(Dwg_Object* obj) {
   Dwg_Entity_ARC* arc;
   arc = obj->tio.entity->tio.ARC;
   printf("    {\n"
-         "      \"type\": \"circle\",\n"
+         "      \"type\": \"arc\",\n"
          "      \"centerX\": %f,\n"
          "      \"centerY\": %f,\n"
          "      \"centerZ\": %f,\n"
@@ -77,10 +83,184 @@ unsigned int output_ELLIPSE(Dwg_Object* obj) {
   return 1;
 }
 
-void output_comma(unsigned int count) {
-  if (count) {
-    printf(",\n");
+unsigned int output_SPLINE(Dwg_Object* obj) {
+  Dwg_Entity_SPLINE* spline;
+  unsigned int i;
+  spline = obj->tio.entity->tio.SPLINE;
+  printf("    {\n"
+         "      \"type\": \"spline\",\n"
+         "      \"scenario\": %u,\n"
+         "      \"degree\": %u,\n"
+         "      \"fitTolerancee\": %f,\n"
+         "      \"beginTagentVector\": {\n"
+         "         \"x\": %f,\n"
+         "         \"y\": %f,\n"
+         "         \"z\": %f\n"
+         "      },\n"
+         "      \"endTangentVector\": {\n"
+         "         \"x\": %f,\n"
+         "         \"y\": %f,\n"
+         "         \"z\": %f\n"
+         "      },\n"
+         "      \"rational\": %u,\n"
+         "      \"closed\": %u,\n"
+         "      \"periodic\": %u,\n"
+         "      \"weighted\": %u,\n"
+         "      \"knotTolerancee\": %f,\n"
+         "      \"controlPointTolerancee\": %f,\n",
+         spline->scenario, spline->degree, spline->fit_tol,
+         spline->beg_tan_vec.x, spline->beg_tan_vec.y, spline->beg_tan_vec.z,
+         spline->end_tan_vec.x, spline->end_tan_vec.y, spline->end_tan_vec.z,
+         spline->rational, spline->closed_b, spline->periodic, spline->weighted,
+         spline->knot_tol, spline->ctrl_tol);
+
+  printf("      \"fitPoints\": [\n");
+  for (i = 0; i < spline->num_fit_pts; i++) {
+      printf("        {\n"
+             "          \"x\": %f,\n"
+             "          \"y\": %f,\n"
+             "          \"z\": %f\n"
+             "        }",
+             spline->fit_pts[i].x, spline->fit_pts[i].y, spline->fit_pts[i].z);
+    if (i < spline->num_fit_pts - 1) {
+      printf(",");
+    }
+    printf("\n");
   }
+
+  printf("\n"
+         "      ]\n");
+
+  printf("      \"knots\": [\n");
+  for (i = 0; i < spline->num_knots; i++) {
+    printf("        %f", spline->knots[i]);
+    if (i < spline->num_knots - 1) {
+      printf(",");
+    }
+    printf("\n");
+  }
+
+  printf("\n"
+         "      ]\n");
+
+  printf("      \"controlPoints\": [\n");
+  for (i = 0; i < spline->num_ctrl_pts; i++) {
+      printf("        {\n"
+             "          \"x\": %f,\n"
+             "          \"y\": %f,\n"
+             "          \"z\": %f,\n"
+             "          \"w\": %f\n"
+             "        }",
+             spline->ctrl_pts[i].x, spline->ctrl_pts[i].y,
+             spline->ctrl_pts[i].z, spline->ctrl_pts[i].w);
+    if (i < spline->num_ctrl_pts - 1) {
+      printf(",");
+    }
+    printf("\n");
+  }
+
+  printf("\n"
+         "      ]\n"
+         "    }");
+
+  return 1;
+}
+
+void ouput_VERTEX_2D(Dwg_Entity_VERTEX_2D* vertex) {
+  printf("        {\n"
+         "          \"x\": %f,\n"
+         "          \"y\": %f\n"
+         "        }",
+         vertex->point.x, vertex->point.y);
+}
+
+unsigned int output_POLYLINE_2D(Dwg_Object* obj) {
+  Dwg_Entity_POLYLINE_2D* poly2d;
+  Dwg_Entity_VERTEX_2D* vertex;
+  Dwg_Object * vertexObj;
+  unsigned int count = 0;
+
+  poly2d = obj->tio.entity->tio.POLYLINE_2D;
+  printf("    {\n"
+         "      \"type\": \"polyline2d\",\n"
+         "      \"flags\": %u,\n"
+         "      \"curveType\": %u,\n"
+         "      \"startWidth\": %f,\n"
+         "      \"endWidth\": %f,\n"
+         "      \"thickness\": %f,\n"
+         "      \"elevation\": %f,\n"
+         "      \"extrusion\": {\n"
+         "         \"x\": %f,\n"
+         "         \"y\": %f,\n"
+         "         \"z\": %f\n"
+         "      },\n"
+         "      \"vertices\": [\n",
+         poly2d->flags, poly2d->curve_type,
+         poly2d->start_width, poly2d->end_width,
+         poly2d->thickness, poly2d->elevation,
+         poly2d->extrusion.x, poly2d->extrusion.y, poly2d->extrusion.z);
+
+
+  vertexObj = poly2d->first_vertex->obj;
+  while(vertexObj != poly2d->last_vertex->obj) {
+    vertex = vertexObj->tio.entity->tio.VERTEX_2D;
+    ouput_VERTEX_2D(vertex);
+
+    count++;
+    output_comma(count);
+
+    vertexObj = dwg_next_object(vertexObj);
+  }
+  vertex = vertexObj->tio.entity->tio.VERTEX_2D;
+  ouput_VERTEX_2D(vertex);
+
+  printf("\n"
+         "      ]\n"
+         "    }");
+
+  return 1;
+}
+
+void ouput_VERTEX_3D(Dwg_Entity_VERTEX_3D* vertex) {
+  printf("        {\n"
+         "          \"x\": %f,\n"
+         "          \"y\": %f,\n"
+         "          \"z\": %f\n"
+         "        }",
+         vertex->point.x, vertex->point.y, vertex->point.z);
+}
+
+unsigned int output_POLYLINE_3D(Dwg_Object* obj) {
+  Dwg_Entity_POLYLINE_3D* poly3d;
+  Dwg_Entity_VERTEX_3D* vertex;
+  Dwg_Object * vertexObj;
+  unsigned int count = 0;
+
+  poly3d = obj->tio.entity->tio.POLYLINE_3D;
+  printf("    {\n"
+         "      \"type\": \"polyline3d\",\n"
+         "      \"flags1\": %u,\n"
+         "      \"flags2\": %u,\n"
+         "      \"vertices\": [\n",
+         poly3d->flags_1, poly3d->flags_2);
+
+  vertexObj = poly3d->first_vertex->obj;
+  while(vertexObj != poly3d->last_vertex->obj) {
+    vertex = vertexObj->tio.entity->tio.VERTEX_3D;
+    ouput_VERTEX_3D(vertex);
+
+    count++;
+    output_comma(count);
+
+    vertexObj = dwg_next_object(vertexObj);
+  }
+  vertex = vertexObj->tio.entity->tio.VERTEX_3D;
+  ouput_VERTEX_3D(vertex);
+
+  printf("\n"
+         "      ]\n"
+         "    }");
+  return 1;
 }
 
 unsigned int output_object(Dwg_Object* obj, unsigned int count) {
@@ -99,6 +279,15 @@ unsigned int output_object(Dwg_Object* obj, unsigned int count) {
   } else if (obj->type == DWG_TYPE_ELLIPSE) {
     output_comma(count);
     return output_ELLIPSE(obj);
+  } else if (obj->type == DWG_TYPE_SPLINE) {
+    output_comma(count);
+    return output_SPLINE(obj);
+  } else if (obj->type == DWG_TYPE_POLYLINE_2D) {
+    output_comma(count);
+    return output_POLYLINE_2D(obj);
+  } else if (obj->type == DWG_TYPE_POLYLINE_3D) {
+    output_comma(count);
+    return output_POLYLINE_3D(obj);
   }
   return 0;
 }
