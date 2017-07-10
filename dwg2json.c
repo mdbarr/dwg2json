@@ -16,12 +16,16 @@ unsigned output_LINE(Dwg_Object* obj) {
   line = obj->tio.entity->tio.LINE;
   printf("    {\n"
          "      \"type\": \"line\",\n"
-         "      \"startX\": %f,\n"
-         "      \"startY\": %f,\n"
-         "      \"startZ\": %f,\n"
-         "      \"endX\": %f,\n"
-         "      \"endY\": %f,\n"
-         "      \"endZ\": %f\n"
+         "      \"start\": {\n"
+         "        \"x\": %f,\n"
+         "        \"y\": %f,\n"
+         "        \"z\": %f\n"
+         "      },\n"
+         "      \"end\": {\n"
+         "        \"x\": %f,\n"
+         "        \"y\": %f,\n"
+         "        \"z\": %f\n"
+         "      }\n"
          "    }",
          line->start.x, line->start.y, line->start.z,
          line->end.x, line->end.y, line->start.z);
@@ -33,9 +37,11 @@ unsigned int output_CIRCLE(Dwg_Object* obj) {
   circle = obj->tio.entity->tio.CIRCLE;
   printf("    {\n"
          "      \"type\": \"circle\",\n"
-         "      \"centerX\": %f,\n"
-         "      \"centerY\": %f,\n"
-         "      \"centerZ\": %f,\n"
+         "      \"center\": {\n"
+         "        \"x\": %f,\n"
+         "        \"y\": %f,\n"
+         "        \"z\": %f\n"
+         "      },\n"
          "      \"radius\": %f\n"
          "    }",
          circle->center.x, circle->center.y, circle->center.z, circle->radius);
@@ -47,9 +53,11 @@ unsigned int output_ARC(Dwg_Object* obj) {
   arc = obj->tio.entity->tio.ARC;
   printf("    {\n"
          "      \"type\": \"arc\",\n"
-         "      \"centerX\": %f,\n"
-         "      \"centerY\": %f,\n"
-         "      \"centerZ\": %f,\n"
+         "      \"center\": {\n"
+         "        \"x\": %f,\n"
+         "        \"y\": %f,\n"
+         "        \"z\": %f\n"
+         "      },\n"
          "      \"startAngle\": %f,\n"
          "      \"endAngle\": %f,\n"
          "      \"radius\": %f\n"
@@ -63,15 +71,21 @@ unsigned int output_ELLIPSE(Dwg_Object* obj) {
   ellipse = obj->tio.entity->tio.ELLIPSE;
   printf("    {\n"
          "      \"type\": \"ellipse\",\n"
-         "      \"centerX\": %f,\n"
-         "      \"centerY\": %f,\n"
-         "      \"centerZ\": %f,\n"
-         "      \"smallAxisX\": %f,\n"
-         "      \"smallAxisY\": %f,\n"
-         "      \"smallAxisZ\": %f,\n"
-         "      \"extrusionX\": %f,\n"
-         "      \"extrusionY\": %f,\n"
-         "      \"extrusionZ\": %f,\n"
+         "      \"center\": {\n"
+         "        \"x\": %f,\n"
+         "        \"y\": %f,\n"
+         "        \"z\": %f\n"
+         "      },\n"
+         "      \"smallAxis\": {\n"
+         "        \"x\": %f,\n"
+         "        \"y\": %f,\n"
+         "        \"z\": %f\n"
+         "      },\n"
+         "      \"extrusion\": {\n"
+         "        \"x\": %f,\n"
+         "        \"y\": %f,\n"
+         "        \"z\": %f\n"
+         "      },\n"
          "      \"axisRatio\": %f,\n"
          "      \"startAngle\": %f,\n"
          "      \"endAngle\": %f\n"
@@ -92,7 +106,7 @@ unsigned int output_SPLINE(Dwg_Object* obj) {
          "      \"scenario\": %u,\n"
          "      \"degree\": %u,\n"
          "      \"fitTolerancee\": %f,\n"
-         "      \"beginTagentVector\": {\n"
+         "      \"beginTangentVector\": {\n"
          "         \"x\": %f,\n"
          "         \"y\": %f,\n"
          "         \"z\": %f\n"
@@ -129,7 +143,7 @@ unsigned int output_SPLINE(Dwg_Object* obj) {
   }
 
   printf("\n"
-         "      ]\n");
+         "      ],\n");
 
   printf("      \"knots\": [\n");
   for (i = 0; i < spline->num_knots; i++) {
@@ -141,7 +155,7 @@ unsigned int output_SPLINE(Dwg_Object* obj) {
   }
 
   printf("\n"
-         "      ]\n");
+         "      ],\n");
 
   printf("      \"controlPoints\": [\n");
   for (i = 0; i < spline->num_ctrl_pts; i++) {
